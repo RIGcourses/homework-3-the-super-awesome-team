@@ -175,7 +175,8 @@ NOTES:
  *   Rating: 1
  */
 int bitNor(int x, int y) {
-  return 2;
+  // Calculating NotOr using De Morgan's Law
+  return ~(x | y);
 }
 /* 
  * bitXor - x^y using only ~ and & 
@@ -185,7 +186,10 @@ int bitNor(int x, int y) {
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  // x ^ y = ~(~x & y) & ~(~x & y))
+  int a = x & ~y;
+  int b = ~x & y;
+  return ~(~a & ~b);
 }
 /* 
  * TMax - return maximum two's complement integer 
@@ -194,7 +198,8 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmax(void) {
-  return 2;
+  // Tmax = 0x7FFFFFF = ~(1 << 31)
+  return ~(1 << 31);
 }
 /* 
  * isNotEqual - return 0 if x == y, and 1 otherwise 
@@ -204,7 +209,8 @@ int tmax(void) {
  *   Rating: 2
  */
 int isNotEqual(int x, int y) {
-  return 2;
+  // returns 1 if x != y, else 0
+  return !!(x ^ y);
 }
 /* 
  * copyLSB - set all bits of result to least significant bit of x
@@ -214,7 +220,8 @@ int isNotEqual(int x, int y) {
  *   Rating: 2
  */
 int copyLSB(int x) {
-  return 2;
+  // sets all bits to LSB of x
+  return (x << 31) >> 31;
 }
 /* 
  * rotateRight - Rotate x to the right by n
@@ -225,7 +232,18 @@ int copyLSB(int x) {
  *   Rating: 3 
  */
 int rotateRight(int x, int n) {
-  return 2;
+  /* Build a mask with ones in the low (32-n) bits:
+   * rightMask = ~(((1<<31) >> n) << 1)
+   * since (1<<31) >> n arithmetically creates n+1 top 1s; <<1 leaves top n 1s.
+   * Logical right = (x >> n) & rightMask.
+   * Left part = x << ((32 - n) mod 32, written as (32 + ~n + 1) & 31 to
+   * avoid shifting by 32 when n == 0
+   */
+   int sign = 1 << 31;
+   int rightMask = ~((sign >> n) << 1); // 0...(32-n ones)
+   int right = (x >> n) & rightMask; // logical right shift
+   int left = x << ((32 + ~n + 1) & 31); // shift by (32 - n) mod 32
+   return right | left;
 }
 /* 
  * isNonNegative - return 1 if x >= 0, return 0 otherwise 
@@ -235,5 +253,6 @@ int rotateRight(int x, int n) {
  *   Rating: 3
  */
 int isNonNegative(int x) {
-  return 2;
+  // returns 1 if x >= 0, else 0
+  return !(x >> 31);
 }
